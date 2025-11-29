@@ -1,17 +1,23 @@
-// Bulk operations for tasks
-app.post('/api/tasks/bulk/delete', (req, res) => {
-    // Logic for deleting multiple tasks
+// Update the /api/tasks/bulk/delete route to implement bulk task deletion functionality
+const express = require('express');
+const router = express.Router();
+const Task = require('../models/Task'); // Assuming you have a Task model
+
+// Bulk delete route
+router.delete('/bulk/delete', async (req, res) => {
+    const { taskIds } = req.body;
+    if (!Array.isArray(taskIds)) {
+        return res.status(400).json({ message: 'taskIds must be an array' });
+    }
+
+    try {
+        const result = await Task.deleteMany({ _id: { $in: taskIds } });
+        console.log(`Deleted tasks: ${taskIds.join(', ')}`); // Logging the deleted task IDs
+        return res.status(200).json({ message: `Deleted ${result.deletedCount} tasks`, taskIds });
+    } catch (error) {
+        console.error('Error deleting tasks:', error);
+        return res.status(500).json({ message: 'Error deleting tasks' });
+    }
 });
 
-app.post('/api/tasks/bulk/assign', (req, res) => {
-    // Logic for assigning multiple tasks to an employee
-});
-
-app.post('/api/tasks/bulk/status', (req, res) => {
-    // Logic for updating status of multiple tasks
-});
-
-// Analytics endpoint
-app.get('/api/analytics', (req, res) => {
-    // Logic for getting analytics dashboard data
-});
+module.exports = router;
